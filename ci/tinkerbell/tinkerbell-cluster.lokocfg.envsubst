@@ -1,0 +1,68 @@
+# For this configuration, following environment variables are required:
+#
+# export TINKERBELL_GRPC_AUTHORITY=192.168.50.2:42113
+# export TINKERBELL_CERT_URL=http://192.168.50.2:42114/cert
+#
+# Where 192.168.50.2 is the IP address of Tinkerbell server.
+#
+#
+# Required Terraform provider must be build from source from this repository:
+#
+# https://github.com/kinvolk/terraform-provider-tinkerbell
+#
+# Checkout the repo and run:
+#
+# go build -o ~/.terraform.d/plugins/terraform-provider-tinkerbell
+#
+#
+# On Tinkerbell server, follow https://github.com/tinkerbell/tinkerbell.org/pull/28/files#diff-f2d7048fb1203ef908b07e53219db545R11-R37
+# to make flatcar-install Docker image available for the workers.
+cluster "tinkerbell" {
+  asset_dir = pathexpand("~/lokoctl-assets")
+  ssh_pubkeys = [file(pathexpand("~/.ssh/id_rsa.pub"))]
+
+  # Tinkerbell hardware entry must exist with this IP address.
+  controller_ip_addresses = [
+  	"192.168.50.10"
+  ]
+
+  dns_zone = "example.com"
+
+	# Workaround for DNS requirement.
+  controller_clc_snippets = [<<EOF
+storage:
+  files:
+    - path: /etc/hosts
+      filesystem: root
+      contents:
+        inline: |
+          192.168.50.10 test.example.com
+          192.168.50.10 test-etcd0.example.com
+          127.0.0.1 localhost
+EOF
+  ,
+  ]
+
+  worker_pool "foo" {
+		# Tinkerbell hardware entry must exist with this IP address.
+    ip_addresses = [
+      "192.168.50.11",
+    ]
+
+		ssh_pubkeys = [file(pathexpand("~/.ssh/id_rsa.pub"))]
+
+		# Workaround for DNS requirement.
+    clc_snippets = [<<EOF
+storage:
+  files:
+    - path: /etc/hosts
+      filesystem: root
+      contents:
+        inline: |
+          192.168.50.10 test.example.com
+          127.0.0.1 localhost
+EOF
+    ,
+    ]
+  }
+}
