@@ -30,6 +30,11 @@ type Platform interface {
 	Meta() Meta
 }
 
+// WorkerPool describes common functionality between worker pools implementations.
+type WorkerPool interface {
+	Name() string
+}
+
 // Meta is a generic information format about the platform.
 type Meta struct {
 	AssetDir      string
@@ -60,4 +65,30 @@ func GetPlatform(name string) (Platform, error) {
 		return nil, fmt.Errorf("no platform with name %q found", name)
 	}
 	return platform, nil
+}
+
+// WorkerPoolNamesUnique takes a slice of worker pools and checks if they all have unique names.
+// If not, error diagnostic is returned.
+func WorkerPoolNamesUnique(pools []WorkerPool) hcl.Diagnostics {
+	var d hcl.Diagnostics
+
+	dup := make(map[string]bool)
+
+	for _, w := range pools {
+		n := w.Name()
+
+		if !dup[n] {
+			dup[n] = true
+			continue
+		}
+
+		// It is duplicated.
+		d = append(d, &hcl.Diagnostic{
+			Severity: hcl.DiagError,
+			Summary:  "Worker pools name should be unique",
+			Detail:   fmt.Sprintf("Worker pool %q is duplicated", n),
+		})
+	}
+
+	return d
 }
