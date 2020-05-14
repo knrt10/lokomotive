@@ -14,10 +14,15 @@
 
 package terraform
 
+import (
+	"os"
+)
+
 // A configuration struct for program information
 // such as the current working directory and
 // command-line arguments.
 type Config struct {
+	SignalCh   chan os.Signal
 	WorkingDir string
 	Verbose    bool
 }

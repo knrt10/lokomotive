@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -96,6 +97,8 @@ type Executor struct {
 	envVariables  map[string]string
 	verbose       bool
 	logger        *log.Entry
+	signalCh      chan os.Signal
+	cmd           *exec.Cmd
 }
 
 // NewExecutor initializes a new Executor.
@@ -106,6 +109,7 @@ func NewExecutor(conf Config) (*Executor, error) {
 	ex.logger = log.WithFields(log.Fields{
 		"phase": "infrastructure",
 	})
+	ex.signalCh = conf.SignalCh
 
 	// Create the folder in which the executor, and its logs will be stored,
 	// if not existing.
@@ -291,13 +295,13 @@ func (ex *Executor) LoadVars() (map[string]interface{}, error) {
 // Terraform call itself failed, in which case, details can be found in the
 // output.
 func (ex *Executor) ExecuteAsync(args ...string) (int, chan struct{}, error) {
-	cmd := ex.generateCommand(args...)
+	ex.generateCommand(args...)
 	rPipe, wPipe := io.Pipe()
-	cmd.Stdout = wPipe
-	cmd.Stderr = wPipe
+	ex.cmd.Stdout = wPipe
+	ex.cmd.Stderr = wPipe
 
 	// Start Terraform.
-	err := cmd.Start()
+	err := ex.cmd.Start()
 	if err != nil {
 		// The process failed to start, we can't even save that it started since we
 		// don't have a PID yet.
@@ -305,7 +309,7 @@ func (ex *Executor) ExecuteAsync(args ...string) (int, chan struct{}, error) {
 	}
 
 	// Create a log file and pipe stdout/stderr to it.
-	logFile, err := os.Create(ex.logPath(cmd.Process.Pid))
+	logFile, err := os.Create(ex.logPath(ex.cmd.Process.Pid))
 	if err != nil {
 		return -1, nil, err
 	}
@@ -314,9 +318,9 @@ func (ex *Executor) ExecuteAsync(args ...string) (int, chan struct{}, error) {
 	done := make(chan struct{})
 	go func() {
 		// Wait for the process to finish.
-		if err := cmd.Wait(); err != nil {
+		if err := ex.cmd.Wait(); err != nil {
 			// The process did not end cleanly. Write the failure file.
-			ioutil.WriteFile(ex.failPath(cmd.Process.Pid), []byte(err.Error()), 0660)
+			ioutil.WriteFile(ex.failPath(ex.cmd.Process.Pid), []byte(err.Error()), 0660)
 		}
 
 		// Close descriptors.
@@ -325,13 +329,33 @@ func (ex *Executor) ExecuteAsync(args ...string) (int, chan struct{}, error) {
 		close(done)
 	}()
 
-	return cmd.Process.Pid, done, nil
+	return ex.cmd.Process.Pid, done, nil
+}
+
+func (ex *Executor) SignalHandler() {
+	go func() {
+		defer signal.Stop(ex.signalCh)
+
+		for {
+			select {
+			case s := <-ex.signalCh:
+				if ex.cmd.Process != nil {
+					err := ex.cmd.Process.Signal(s)
+					if err != nil {
+						ex.logger.Warnf("sending interrupt to terraform failed: %q", err)
+					}
+					break
+				}
+			}
+		}
+	}()
 }
 
 // ExecuteSync is like Execute, but synchronous.
 func (ex *Executor) ExecuteSync(args ...string) ([]byte, error) {
-	cmd := ex.generateCommand(args...)
-	return cmd.Output()
+	ex.generateCommand(args...)
+
+	return ex.cmd.Output()
 }
 
 // Plan runs 'terraform plan'.
@@ -360,7 +384,7 @@ func (ex *Executor) Output(key string, s interface{}) error {
 // by setting up the command, configuration, working directory
 // (so the files such as terraform.tfstate are stored at the right place) and
 // extra environment variables. The current environment is fully inherited.
-func (ex *Executor) generateCommand(args ...string) *exec.Cmd {
+func (ex *Executor) generateCommand(args ...string) {
 	cmd := exec.Command(ex.binaryPath, args...)
 	// Copy environment because nil cannot be used to inherit if we add something in the next step.
 	cmd.Env = os.Environ()
@@ -368,7 +392,8 @@ func (ex *Executor) generateCommand(args ...string) *exec.Cmd {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", strings.ToUpper(k), v))
 	}
 	cmd.Dir = ex.executionPath
-	return cmd
+
+	ex.cmd = cmd
 }
 
 // WorkingDirectory returns the directory in which Terraform runs, which can be
