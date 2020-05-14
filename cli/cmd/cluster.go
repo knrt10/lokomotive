@@ -31,6 +31,7 @@ import (
 	"github.com/kinvolk/lokomotive/pkg/components/util"
 	"github.com/kinvolk/lokomotive/pkg/config"
 	"github.com/kinvolk/lokomotive/pkg/platform"
+	"github.com/kinvolk/lokomotive/pkg/signals"
 	"github.com/kinvolk/lokomotive/pkg/terraform"
 )
 
@@ -113,9 +114,12 @@ func initializeTerraform(ctxLogger *logrus.Entry, p platform.Platform, b backend
 		ctxLogger.Fatalf("Failed to configure Terraform : %v", err)
 	}
 
+	sigHandler := signals.NewSignalHandler()
+
 	conf := terraform.Config{
 		WorkingDir: terraform.GetTerraformRootDir(assetDir),
 		Verbose:    verbose,
+		SignalCh:   sigHandler.SignalCh,
 	}
 
 	ex, err := terraform.NewExecutor(conf)
