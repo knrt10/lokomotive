@@ -162,6 +162,7 @@ func (c *config) Apply(ex *terraform.Executor) error {
 		return err
 	}
 
+	ex.SignalHandler()
 	return c.terraformSmartApply(ex, dnsProvider)
 }
 
