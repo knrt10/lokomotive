@@ -18,6 +18,8 @@ spec:
     - --cluster-signing-cert-file=/etc/kubernetes/secrets/ca.crt
     - --cluster-signing-key-file=/etc/kubernetes/secrets/ca.key
     - --configure-cloud-routes=false
+    - --controllers=*,tokencleaner
+    - --experimental-cluster-signing-duration=1h
     - --kubeconfig=/etc/kubernetes/secrets/kubeconfig
     - --leader-elect=true
     - --root-ca-file=/etc/kubernetes/secrets/ca.crt

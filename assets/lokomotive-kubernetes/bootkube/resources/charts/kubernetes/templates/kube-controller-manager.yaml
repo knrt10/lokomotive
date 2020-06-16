@@ -60,6 +60,8 @@ spec:
         - --cluster-signing-cert-file=/etc/kubernetes/secrets/ca.crt
         - --cluster-signing-key-file=/etc/kubernetes/secrets/ca.key
         - --configure-cloud-routes=false
+        - --controllers=*,tokencleaner
+        - --experimental-cluster-signing-duration=1h
         - --leader-elect=true
         - --flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins
         - --pod-eviction-timeout=1m
