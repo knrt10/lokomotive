@@ -101,7 +101,9 @@ systemd:
           --config=/etc/kubernetes/kubelet.config \
           --exit-on-lock-contention \
           --hostname-override=${domain_name} \
-          --kubeconfig=/etc/kubernetes/kubeconfig \
+          --kubeconfig=/var/lib/kubelet/kubeconfig \
+          --bootstrap-kubeconfig=/etc/kubernetes/kubeconfig \
+          --rotate-certificates \
           --lock-file=/var/run/lock/kubelet.lock \
           --network-plugin=cni \
           --node-labels=$${NODE_LABELS} \

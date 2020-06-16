@@ -65,7 +65,9 @@ systemd:
           --cni-conf-dir=/etc/cni/net.d \
           --config=/etc/kubernetes/kubelet.config \
           --exit-on-lock-contention \
-          --kubeconfig=/etc/kubernetes/kubeconfig \
+          --kubeconfig=/var/lib/kubelet/kubeconfig \
+          --bootstrap-kubeconfig=/etc/kubernetes/kubeconfig \
+          --rotate-certificates \
           --lock-file=/var/run/lock/kubelet.lock \
           --network-plugin=cni \
           --node-labels=$${NODE_LABELS} \
@@ -146,7 +148,7 @@ storage:
             --net=host \
             --dns=host \
             -- \
-            kubectl --kubeconfig=/etc/kubernetes/kubeconfig delete node $(hostname)
+            kubectl --kubeconfig=/var/lib/kubelet/kubeconfig delete node $(hostname)
 passwd:
   users:
     - name: core
