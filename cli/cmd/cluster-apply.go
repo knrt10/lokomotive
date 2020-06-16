@@ -80,6 +80,18 @@ func runClusterApply(cmd *cobra.Command, args []string) {
 	fmt.Printf("\nYour configurations are stored in %s\n", assetDir)
 
 	kubeconfigPath := assetsKubeconfig(assetDir)
+
+	cu := controlplaneUpdater{
+		kubeconfigPath: kubeconfigPath,
+		assetDir:       assetDir,
+		ctxLogger:      *ctxLogger,
+		ex:             *ex,
+	}
+
+	if exists && !p.Meta().Managed {
+		cu.upgradeComponent("bootstrap-secrets")
+	}
+
 	if err := verifyCluster(kubeconfigPath, p.Meta().ExpectedNodes); err != nil {
 		ctxLogger.Fatalf("Verify cluster: %v", err)
 	}
@@ -87,13 +99,6 @@ func runClusterApply(cmd *cobra.Command, args []string) {
 	// Do controlplane upgrades only if cluster already exists and it is not a managed platform.
 	if exists && !p.Meta().Managed {
 		fmt.Printf("\nEnsuring that cluster controlplane is up to date.\n")
-
-		cu := controlplaneUpdater{
-			kubeconfigPath: kubeconfigPath,
-			assetDir:       assetDir,
-			ctxLogger:      *ctxLogger,
-			ex:             *ex,
-		}
 
 		releases := []string{"pod-checkpointer", "kube-apiserver", "kubernetes", "calico"}
 
