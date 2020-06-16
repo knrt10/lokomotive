@@ -98,6 +98,11 @@ variable "enable_csi" {
   description = "Set up IAM role needed for dynamic volumes provisioning to work on AWS"
 }
 
+variable "worker_bootstrap_tokens" {
+  description = "List of token-id and token-secret of each node."
+  type        = list(any)
+}
+
 # configuration
 
 variable "ssh_keys" {

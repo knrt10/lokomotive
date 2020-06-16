@@ -104,9 +104,14 @@ variable "tags" {
 
 # configuration
 
-variable "kubeconfig" {
+variable "ca_cert" {
+  description = "Kubernetes CA certificate needed in the kubeconfig file."
   type        = string
-  description = "Must be set to `kubeconfig` output by cluster"
+}
+
+variable "apiserver" {
+  description = "Apiserver private endpoint needed in the kubeconfig file."
+  type        = string
 }
 
 variable "ssh_keys" {

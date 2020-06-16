@@ -31,8 +31,12 @@ output "worker_security_groups" {
   description = "List of worker security group IDs"
 }
 
-output "kubeconfig" {
-  value = module.bootkube.kubeconfig-kubelet
+output "ca_cert" {
+  value = module.bootkube.ca_cert
+}
+
+output "apiserver" {
+  value = local.api_server
 }
 
 # Outputs for custom load balancing
@@ -61,4 +65,8 @@ output "kubelet_values" {
 
 output "calico_values" {
   value = module.bootkube.calico_values
+}
+
+output "bootstrap-secrets_values" {
+  value = module.bootkube.bootstrap-secrets_values
 }

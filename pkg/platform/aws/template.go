@@ -103,6 +103,12 @@ module "aws-{{.Config.ClusterName}}" {
     {{- end }}
   ]
   {{- end }}
+
+  worker_bootstrap_tokens = concat(
+  {{ range $index, $pool := .Config.WorkerPools }}
+  module.worker-pool-{{ $index }}.worker_bootstrap_tokens,
+  {{- end }}
+  )
 }
 
 {{ range $index, $pool := .Config.WorkerPools }}
@@ -116,7 +122,8 @@ module "worker-pool-{{ $index }}" {
   vpc_id                = module.aws-{{ $.Config.ClusterName }}.vpc_id
   subnet_ids            = flatten([module.aws-{{ $.Config.ClusterName }}.subnet_ids])
   security_groups       = module.aws-{{ $.Config.ClusterName }}.worker_security_groups
-  kubeconfig            = module.aws-{{ $.Config.ClusterName }}.kubeconfig
+  ca_cert               = module.aws-{{ $.Config.ClusterName }}.ca_cert
+  apiserver             = module.aws-{{ $.Config.ClusterName }}.apiserver
 
   {{- if $.Config.ServiceCIDR }}
   service_cidr          = "{{ $.Config.ServiceCIDR }}"
@@ -246,6 +253,11 @@ output "kubelet_values" {
 
 output "calico_values" {
   value     = module.aws-{{.Config.ClusterName}}.calico_values
+  sensitive = true
+}
+
+output "bootstrap-secrets_values" {
+  value     = module.aws-{{.Config.ClusterName}}.bootstrap-secrets_values
   sensitive = true
 }
 `

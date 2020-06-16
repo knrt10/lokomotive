@@ -120,6 +120,12 @@ systemd:
         WantedBy=multi-user.target
 storage:
   files:
+    - path: /etc/kubernetes/kubeconfig
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          ${kubeconfig}
     - path: /etc/kubernetes/kubelet.env
       filesystem: root
       mode: 0644

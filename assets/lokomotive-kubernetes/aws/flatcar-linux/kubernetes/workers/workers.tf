@@ -1,5 +1,7 @@
 # Workers AutoScaling Group
 resource "aws_autoscaling_group" "workers" {
+  count = var.worker_count > 0 ? 1 : 0
+
   name = "${var.pool_name}-worker"
 
   # count
@@ -13,7 +15,7 @@ resource "aws_autoscaling_group" "workers" {
   vpc_zone_identifier = var.subnet_ids
 
   # template
-  launch_configuration = aws_launch_configuration.worker.name
+  launch_configuration = aws_launch_configuration.worker[0].name
 
   # target groups to which instances should be added
   target_group_arns = flatten([
@@ -54,13 +56,15 @@ resource "aws_autoscaling_group" "workers" {
 
 # Worker template
 resource "aws_launch_configuration" "worker" {
+  count = var.worker_count
+
   name_prefix       = "${var.cluster_name}-${var.pool_name}-"
   image_id          = local.ami_id
   instance_type     = var.instance_type
   spot_price        = var.spot_price
   enable_monitoring = false
 
-  user_data = data.ct_config.worker-ignition.rendered
+  user_data = data.ct_config.worker-ignition[count.index].rendered
 
   # storage
   root_block_device {
@@ -82,17 +86,21 @@ resource "aws_launch_configuration" "worker" {
 
 # Worker Ignition config
 data "ct_config" "worker-ignition" {
-  content      = data.template_file.worker-config.rendered
+  count = var.worker_count
+
+  content      = data.template_file.worker-config[count.index].rendered
   pretty_print = false
   snippets     = var.clc_snippets
 }
 
 # Worker Container Linux config
 data "template_file" "worker-config" {
+  count = var.worker_count
+
   template = file("${path.module}/cl/worker.yaml.tmpl")
 
   vars = {
-    kubeconfig             = indent(10, var.kubeconfig)
+    kubeconfig             = indent(10, data.template_file.bootstrap-kubeconfig[count.index].rendered)
     ssh_keys               = jsonencode(var.ssh_keys)
     cluster_dns_service_ip = cidrhost(var.service_cidr, 10)
     cluster_domain_suffix  = var.cluster_domain_suffix

@@ -125,6 +125,7 @@ data "template_file" "controller-configs" {
   template = file("${path.module}/cl/controller.yaml.tmpl")
 
   vars = {
+    kubeconfig = indent(10, data.template_file.bootstrap-kubeconfig[count.index].rendered)
     # Cannot use cyclic dependencies on controllers or their DNS records
     etcd_name   = "etcd${count.index}"
     etcd_domain = "${var.cluster_name}-etcd${count.index}.${var.dns_zone}"

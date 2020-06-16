@@ -44,16 +44,8 @@ resource "null_resource" "copy-controller-secrets" {
     destination = "$HOME/etcd-peer.key"
   }
 
-  provisioner "file" {
-    content     = module.bootkube.kubeconfig-kubelet
-    destination = "$HOME/kubeconfig"
-  }
-
   provisioner "remote-exec" {
     inline = [
-      "sudo mv $HOME/kubeconfig /etc/kubernetes/kubeconfig",
-      "sudo chown root:root /etc/kubernetes/kubeconfig",
-      "sudo chmod 644 /etc/kubernetes/kubeconfig",
       "sudo mkdir -p /etc/ssl/etcd/etcd",
       "sudo mv etcd-client* /etc/ssl/etcd/",
       "sudo cp /etc/ssl/etcd/etcd-client-ca.crt /etc/ssl/etcd/etcd/server-ca.crt",
