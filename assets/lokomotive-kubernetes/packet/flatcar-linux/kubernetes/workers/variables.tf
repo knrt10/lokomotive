@@ -94,8 +94,13 @@ variable "cluster_domain_suffix" {
   default     = "cluster.local"
 }
 
-variable "kubeconfig" {
-  description = "Kubeconfig file"
+variable "ca_cert" {
+  description = "Kubernetes CA certificate needed in the kubeconfig file."
+  type        = string
+}
+
+variable "apiserver" {
+  description = "Apiserver private endpoint needed in the kubeconfig file."
   type        = string
 }
 

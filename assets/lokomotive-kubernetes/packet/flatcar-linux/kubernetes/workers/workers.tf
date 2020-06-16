@@ -8,7 +8,7 @@ resource "packet_device" "nodes" {
   project_id       = var.project_id
   ipxe_script_url  = var.ipxe_script_url
   always_pxe       = false
-  user_data        = var.ipxe_script_url != "" ? data.ct_config.install-ignitions.rendered : data.ct_config.ignitions.rendered
+  user_data        = var.ipxe_script_url != "" ? data.ct_config.install-ignitions[count.index].rendered : data.ct_config.ignitions[count.index].rendered
 
   # If not present in the map, it uses ${var.reservation_ids_default}.
   hardware_reservation_id = lookup(
@@ -26,12 +26,13 @@ resource "packet_device" "nodes" {
 
 # These configs are used for the fist boot, to run flatcar-install
 data "ct_config" "install-ignitions" {
+  count = var.worker_count
   content = templatefile("${path.module}/cl/install.yaml.tmpl", {
     os_channel           = var.os_channel
     os_version           = var.os_version
     flatcar_linux_oem    = "packet"
     ssh_keys             = jsonencode(var.ssh_keys)
-    postinstall_ignition = data.ct_config.ignitions.rendered
+    postinstall_ignition = data.ct_config.ignitions[count.index].rendered
   })
 }
 
@@ -49,11 +50,12 @@ locals {
 }
 
 data "ct_config" "ignitions" {
+  count = var.worker_count
   content = templatefile(
     "${path.module}/cl/worker.yaml.tmpl",
     {
       os_arch               = var.os_arch
-      kubeconfig            = indent(10, var.kubeconfig)
+      kubeconfig            = indent(10, data.template_file.bootstrap-kubeconfig[count.index].rendered)
       ssh_keys              = jsonencode(var.ssh_keys)
       k8s_dns_service_ip    = cidrhost(var.service_cidr, 10)
       cluster_domain_suffix = var.cluster_domain_suffix

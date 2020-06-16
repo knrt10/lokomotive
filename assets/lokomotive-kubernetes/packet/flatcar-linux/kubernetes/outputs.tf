@@ -2,8 +2,12 @@ output "kubeconfig-admin" {
   value = module.bootkube.kubeconfig-admin
 }
 
-output "kubeconfig" {
-  value = module.bootkube.kubeconfig-kubelet
+output "ca_cert" {
+  value = module.bootkube.ca_cert
+}
+
+output "apiserver" {
+  value = local.api_server
 }
 
 # values.yaml content for all deployed charts.
@@ -25,6 +29,10 @@ output "kubelet_values" {
 
 output "calico_values" {
   value = module.bootkube.calico_values
+}
+
+output "bootstrap-secrets_values" {
+  value = module.bootkube.bootstrap-secrets_values
 }
 
 # Dummy output used to create dependencies only

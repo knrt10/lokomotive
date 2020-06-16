@@ -74,6 +74,11 @@ variable "controller_clc_snippets" {
   default     = []
 }
 
+variable "worker_bootstrap_tokens" {
+  description = "List of token-id and token-secret of each node."
+  type        = list(any)
+}
+
 # Configuration
 
 variable "ssh_keys" {

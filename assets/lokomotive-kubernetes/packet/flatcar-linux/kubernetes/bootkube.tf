@@ -1,9 +1,13 @@
+locals {
+  api_server = format("%s-private.%s", var.cluster_name, var.dns_zone)
+}
+
 module "bootkube" {
   source       = "../../../bootkube"
   cluster_name = var.cluster_name
 
   # Cannot use cyclic dependencies on controllers or their DNS records
-  api_servers          = [format("%s-private.%s", var.cluster_name, var.dns_zone)]
+  api_servers          = [local.api_server]
   api_servers_external = [format("%s.%s", var.cluster_name, var.dns_zone)]
   etcd_servers         = [for i, d in packet_device.controllers : format("%s-etcd%d.%s", var.cluster_name, i, var.dns_zone)]
   asset_dir            = var.asset_dir
@@ -37,4 +41,6 @@ module "bootkube" {
   #
   # metadata.packet.net should always resolve to 192.80.8.124.
   blocked_metadata_cidrs = ["192.80.8.124/32"]
+
+  bootstrap_tokens = concat(local.controller_bootstrap_tokens, var.worker_bootstrap_tokens)
 }

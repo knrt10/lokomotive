@@ -118,6 +118,12 @@ EOF
     {{- end }}
   ]
   {{- end }}
+
+  worker_bootstrap_tokens = concat(
+  {{- range $index, $pool := .Config.WorkerPools }}
+  module.worker-{{$pool.Name}}.worker_bootstrap_tokens,
+  {{- end }}
+  )
 }
 
 {{ range $index, $pool := .Config.WorkerPools }}
@@ -182,7 +188,8 @@ EOF
   os_version = "{{ $pool.OSVersion }}"
   {{- end }}
 
-  kubeconfig = module.packet-{{ $.Config.ClusterName }}.kubeconfig
+  ca_cert   = module.packet-{{ $.Config.ClusterName }}.ca_cert
+  apiserver = module.packet-{{ $.Config.ClusterName }}.apiserver
 
   {{- if $pool.Labels }}
   labels = "{{ $pool.Labels }}"
@@ -330,6 +337,11 @@ output "kubelet_values" {
 
 output "calico_values" {
   value     = module.packet-{{.Config.ClusterName}}.calico_values
+  sensitive = true
+}
+
+output "bootstrap-secrets_values" {
+  value     = module.packet-{{.Config.ClusterName}}.bootstrap-secrets_values
   sensitive = true
 }
 `
