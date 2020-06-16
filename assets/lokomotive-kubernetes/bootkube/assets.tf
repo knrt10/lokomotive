@@ -88,6 +88,28 @@ resource "local_file" "kubernetes" {
   })
 }
 
+# Populate bootstrap secrets chart.
+# TODO: Currently, there is no way in Terraform to copy local directory, so we use `template_dir` for it.
+# The downside is, that any Terraform templating syntax stored in this directory will be evaluated, which may bring unexpected results.
+resource "template_dir" "bootstrap-secrets" {
+  source_dir      = "${replace(path.module, path.cwd, ".")}/resources/charts/bootstrap-secrets"
+  destination_dir = "${var.asset_dir}/charts/kube-system/bootstrap-secrets"
+}
+
+# Populate kubernetes chart values file named kubernetes.yaml.
+resource "local_file" "bootstrap-secrets" {
+  filename = "${var.asset_dir}/charts/kube-system/bootstrap-secrets.yaml"
+  content = templatefile("${path.module}/resources/charts/bootstrap-secrets.yaml", {
+    bootstrap_tokens = [
+      for token in var.bootstrap_tokens :
+      {
+        token_id     = token.token_id
+        token_secret = token.token_secret
+      }
+    ]
+  })
+}
+
 locals {
   kubelet = var.disable_self_hosted_kubelet == false ? 1 : 0
 }

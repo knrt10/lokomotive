@@ -73,3 +73,7 @@ output "kubelet_values" {
 output "calico_values" {
   value = join("", local_file.calico.*.content)
 }
+
+output "bootstrap-secrets_values" {
+  value = local_file.bootstrap-secrets.content
+}
