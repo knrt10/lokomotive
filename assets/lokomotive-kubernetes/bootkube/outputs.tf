@@ -2,11 +2,6 @@ output "cluster_dns_service_ip" {
   value = cidrhost(var.service_cidr, 10)
 }
 
-// Generated kubeconfig for Kubelets (i.e. lower privilege than admin)
-output "kubeconfig-kubelet" {
-  value = data.template_file.kubeconfig-kubelet.rendered
-}
-
 // Generated kubeconfig for admins (i.e. human super-user)
 output "kubeconfig-admin" {
   value = data.template_file.kubeconfig-admin.rendered
@@ -48,14 +43,6 @@ output "etcd_peer_key" {
 
 output "ca_cert" {
   value = base64encode(tls_self_signed_cert.kube-ca.cert_pem)
-}
-
-output "kubelet_cert" {
-  value = base64encode(tls_locally_signed_cert.kubelet.cert_pem)
-}
-
-output "kubelet_key" {
-  value = base64encode(tls_private_key.kubelet.private_key_pem)
 }
 
 output "server" {

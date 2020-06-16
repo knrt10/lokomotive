@@ -123,12 +123,6 @@ resource "template_dir" "kubelet" {
   destination_dir = "${var.asset_dir}/charts/kube-system/kubelet"
 }
 
-# Generated kubeconfig for Kubelets
-resource "local_file" "kubeconfig-kubelet" {
-  content  = data.template_file.kubeconfig-kubelet.rendered
-  filename = "${var.asset_dir}/auth/kubeconfig-kubelet"
-}
-
 # Generated admin kubeconfig (bootkube requires it be at auth/kubeconfig)
 # https://github.com/kubernetes-incubator/bootkube/blob/master/pkg/bootkube/bootkube.go#L42
 resource "local_file" "kubeconfig-admin" {
@@ -140,17 +134,6 @@ resource "local_file" "kubeconfig-admin" {
 resource "local_file" "kubeconfig-admin-named" {
   content  = data.template_file.kubeconfig-admin.rendered
   filename = "${var.asset_dir}/auth/${var.cluster_name}-config"
-}
-
-data "template_file" "kubeconfig-kubelet" {
-  template = file("${path.module}/resources/kubeconfig-kubelet")
-
-  vars = {
-    ca_cert      = base64encode(tls_self_signed_cert.kube-ca.cert_pem)
-    kubelet_cert = base64encode(tls_locally_signed_cert.kubelet.cert_pem)
-    kubelet_key  = base64encode(tls_private_key.kubelet.private_key_pem)
-    server       = format("https://%s:%s", var.api_servers[0], var.external_apiserver_port)
-  }
 }
 
 # If var.api_servers_external isn't set, use var.api_servers.
