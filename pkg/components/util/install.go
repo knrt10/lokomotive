@@ -62,6 +62,12 @@ func InstallComponent(c components.Component, kubeconfig string) error {
 		return fmt.Errorf("failed ensuring that namespace %q for component %q exists: %w", ns, name, err)
 	}
 
+	labels := c.GetNamespaceLabels()
+
+	if err := k8sutil.UpdateNamespaceWithLabels(labels, ns, kubeconfig); err != nil {
+		return fmt.Errorf("failed updating namespace %q with labels for component %q: %w", ns, name, err)
+	}
+
 	actionConfig, err := HelmActionConfig(ns, kubeconfig)
 	if err != nil {
 		return fmt.Errorf("failed preparing helm client: %w", err)

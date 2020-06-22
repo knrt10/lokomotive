@@ -21,6 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/kinvolk/lokomotive/internal"
 	"github.com/kinvolk/lokomotive/pkg/install"
 	"github.com/kinvolk/lokomotive/pkg/k8sutil"
 	"github.com/kinvolk/lokomotive/pkg/lokomotive"
@@ -84,6 +85,12 @@ func runClusterApply(cmd *cobra.Command, args []string) {
 		ctxLogger.Fatalf("Verify cluster: %v", err)
 	}
 
+	labels := map[string]string{}
+	internal.AppendNamespaceNameToLabels("kube-system", &labels)
+
+	if err := k8sutil.UpdateNamespaceWithLabels(labels, "kube-system", kubeconfigPath); err != nil {
+		ctxLogger.Fatalf("error updating namespace %q with labels: %q", "kube-system", err)
+	}
 	// Do controlplane upgrades only if cluster already exists and it is not a managed platform.
 	if exists && !p.Meta().Managed {
 		fmt.Printf("\nEnsuring that cluster controlplane is up to date.\n")
