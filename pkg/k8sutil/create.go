@@ -19,12 +19,16 @@ package k8sutil
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
 
 	"github.com/pkg/errors"
+	v1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
@@ -152,4 +156,29 @@ func parseJSONManifest(data []byte) ([]manifest, error) {
 		manifests = append(manifests, mn...)
 	}
 	return manifests, nil
+}
+
+// UpdateNamespaceWithLabels updates the given namespace with given labels.
+func UpdateNamespaceWithLabels(labels map[string]string, namespace string, kubeconfigPath string) error {
+	cs, err := NewClientset(kubeconfigPath)
+	if err != nil {
+		return fmt.Errorf("creating clientset: %w", err)
+	}
+
+	if namespace == "" {
+		return fmt.Errorf("namespace name can't be empty")
+	}
+
+	// Ensure the namespace in which we create release and resources exists.
+	_, err = cs.CoreV1().Namespaces().Update(context.TODO(), &v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   namespace,
+			Labels: labels,
+		},
+	}, metav1.UpdateOptions{})
+	if err != nil && !apierrors.IsAlreadyExists(err) {
+		return err
+	}
+
+	return nil
 }
