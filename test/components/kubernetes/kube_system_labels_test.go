@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build aws aws_edge packet
+// +build aws aws_edge packet aks
 // +build e2e
 
-package dex
+package kubernetes //nolint:testpackage
 
 import (
 	"testing"
@@ -24,20 +24,7 @@ import (
 	testutil "github.com/kinvolk/lokomotive/test/components/util"
 )
 
-const (
-	namespace = "dex"
-)
-
-func TestDexDeployment(t *testing.T) {
-	client := testutil.CreateKubeClient(t)
-
-	t.Run("deployment", func(t *testing.T) {
-		t.Parallel()
-		deployment := "dex"
-
-		testutil.WaitForDeployment(t, client, namespace, deployment, time.Second*5, time.Minute*5)
-	})
-}
+const namespace = "kube-system"
 
 func TestNamespaceHasLabels(t *testing.T) {
 	client := testutil.CreateKubeClient(t)
