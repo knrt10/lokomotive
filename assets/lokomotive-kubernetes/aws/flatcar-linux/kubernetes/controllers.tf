@@ -125,7 +125,13 @@ data "template_file" "controller-configs" {
   template = file("${path.module}/cl/controller.yaml.tmpl")
 
   vars = {
-    kubeconfig = indent(10, data.template_file.bootstrap-kubeconfig[count.index].rendered)
+    kubeconfig = indent(10, templatefile("${path.module}/workers/cl/bootstrap-kubeconfig.yaml.tmpl", {
+      token_id     = random_string.bootstrap-token-id[count.index].result
+      token_secret = random_string.bootstrap-token-secret[count.index].result
+      ca_cert      = module.bootkube.ca_cert
+      server       = "https://${local.api_server}:6443"
+    }))
+
     # Cannot use cyclic dependencies on controllers or their DNS records
     etcd_name   = "etcd${count.index}"
     etcd_domain = "${var.cluster_name}-etcd${count.index}.${var.dns_zone}"
