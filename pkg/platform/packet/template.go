@@ -340,8 +340,8 @@ output "calico_values" {
   sensitive = true
 }
 
-output "bootstrap-secrets_values" {
-  value     = module.packet-{{.Config.ClusterName}}.bootstrap-secrets_values
+output "bootstrap_secrets_values" {
+  value     = module.packet-{{.Config.ClusterName}}.bootstrap_secrets_values
   sensitive = true
 }
 `
