@@ -126,8 +126,8 @@ data "template_file" "controller-configs" {
 
   vars = {
     kubeconfig = indent(10, templatefile("${path.module}/workers/cl/bootstrap-kubeconfig.yaml.tmpl", {
-      token_id     = random_string.bootstrap-token-id[count.index].result
-      token_secret = random_string.bootstrap-token-secret[count.index].result
+      token_id     = random_string.bootstrap_token_id[count.index].result
+      token_secret = random_string.bootstrap_token_secret[count.index].result
       ca_cert      = module.bootkube.ca_cert
       server       = "https://${local.api_server}:6443"
     }))
