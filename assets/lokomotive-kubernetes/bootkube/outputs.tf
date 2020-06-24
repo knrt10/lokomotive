@@ -74,6 +74,6 @@ output "calico_values" {
   value = join("", local_file.calico.*.content)
 }
 
-output "bootstrap-secrets_values" {
+output "bootstrap_secrets_values" {
   value = local_file.bootstrap-secrets.content
 }
