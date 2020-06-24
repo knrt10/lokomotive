@@ -20,4 +20,6 @@ module "bootkube" {
 
   # Disable the self hosted kubelet.
   disable_self_hosted_kubelet = var.disable_self_hosted_kubelet
+
+  bootstrap_tokens = concat(local.controller_bootstrap_tokens, local.worker_bootstrap_tokens)
 }

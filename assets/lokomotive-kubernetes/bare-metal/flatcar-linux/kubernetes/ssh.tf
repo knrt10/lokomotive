@@ -18,7 +18,7 @@ resource "null_resource" "copy-controller-secrets" {
   }
 
   provisioner "file" {
-    content     = module.bootkube.kubeconfig-kubelet
+    content     = data.template_file.bootstrap-kubeconfig-controller[count.index].rendered
     destination = "$HOME/kubeconfig"
   }
 
@@ -94,7 +94,7 @@ resource "null_resource" "copy-worker-secrets" {
   }
 
   provisioner "file" {
-    content     = module.bootkube.kubeconfig-kubelet
+    content     = data.template_file.bootstrap-kubeconfig-worker[count.index].rendered
     destination = "$HOME/kubeconfig"
   }
 

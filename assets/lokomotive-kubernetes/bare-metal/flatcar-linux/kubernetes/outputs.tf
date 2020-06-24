@@ -22,3 +22,7 @@ output "kubelet_values" {
 output "calico_values" {
   value = module.bootkube.calico_values
 }
+
+output "bootstrap-secrets_values" {
+  value = module.bootkube.bootstrap-secrets_values
+}
