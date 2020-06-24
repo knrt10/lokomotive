@@ -131,8 +131,8 @@ output "calico_values" {
   sensitive = true
 }
 
-output "bootstrap-secrets_values" {
-  value     = module.bare-metal-{{.ClusterName}}.bootstrap-secrets_values
+output "bootstrap_secrets_values" {
+  value     = module.bare-metal-{{.ClusterName}}.bootstrap_secrets_values
   sensitive = true
 }
 `
