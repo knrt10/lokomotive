@@ -67,6 +67,6 @@ output "calico_values" {
   value = module.bootkube.calico_values
 }
 
-output "bootstrap-secrets_values" {
-  value = module.bootkube.bootstrap-secrets_values
+output "bootstrap_secrets_values" {
+  value = module.bootkube.bootstrap_secrets_values
 }
