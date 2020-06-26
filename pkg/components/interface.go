@@ -28,4 +28,6 @@ type Component interface {
 	RenderManifests() (map[string]string, error)
 	// Metadata returns component metadata.
 	Metadata() Metadata
+	// GetNamespaceLabels gets labels specific to the component namespace.
+	GetNamespaceLabels() map[string]string
 }

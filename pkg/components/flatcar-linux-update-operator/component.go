@@ -21,6 +21,7 @@ import (
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/pkg/errors"
 
+	"github.com/kinvolk/lokomotive/internal"
 	"github.com/kinvolk/lokomotive/pkg/assets"
 	"github.com/kinvolk/lokomotive/pkg/components"
 	"github.com/kinvolk/lokomotive/pkg/util/walkers"
@@ -57,4 +58,12 @@ func (c *component) Metadata() components.Metadata {
 		Name:      componentName,
 		Namespace: "reboot-coordinator",
 	}
+}
+
+// GetNamespaceLabels returns labels that should be added to the component namespace.
+func (c *component) GetNamespaceLabels() map[string]string {
+	labels := map[string]string{}
+	internal.AppendNamespaceNameToLabels(c.Metadata().Namespace, &labels)
+
+	return labels
 }

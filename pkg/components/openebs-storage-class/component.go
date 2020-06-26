@@ -23,6 +23,7 @@ import (
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/pkg/errors"
 
+	"github.com/kinvolk/lokomotive/internal"
 	"github.com/kinvolk/lokomotive/pkg/components"
 )
 
@@ -146,4 +147,12 @@ func (c *component) Metadata() components.Metadata {
 		// Return the same namespace which the openebs-operator component is using.
 		Namespace: "openebs",
 	}
+}
+
+// GetNamespaceLabels returns labels that should be added to the component namespace.
+func (c *component) GetNamespaceLabels() map[string]string {
+	labels := map[string]string{}
+	internal.AppendNamespaceNameToLabels(c.Metadata().Namespace, &labels)
+
+	return labels
 }

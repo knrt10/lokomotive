@@ -26,6 +26,7 @@ import (
 	"github.com/packethost/packngo"
 	"github.com/pkg/errors"
 
+	"github.com/kinvolk/lokomotive/internal"
 	"github.com/kinvolk/lokomotive/internal/template"
 	"github.com/kinvolk/lokomotive/pkg/components"
 	"github.com/kinvolk/lokomotive/pkg/components/util"
@@ -337,4 +338,12 @@ func (c *component) Metadata() components.Metadata {
 		Name:      name,
 		Namespace: c.Namespace,
 	}
+}
+
+// GetNamespaceLabels returns labels that should be added to the component namespace.
+func (c *component) GetNamespaceLabels() map[string]string {
+	labels := map[string]string{}
+	internal.AppendNamespaceNameToLabels(c.Metadata().Namespace, &labels)
+
+	return labels
 }
