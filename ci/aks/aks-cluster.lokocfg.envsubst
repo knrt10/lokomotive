@@ -119,3 +119,5 @@ component "httpbin" {
 
   certmanager_cluster_issuer = "letsencrypt-staging"
 }
+
+component "istio-operator" {}
