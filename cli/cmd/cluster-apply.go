@@ -17,11 +17,13 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/kinvolk/lokomotive/pkg/components/util"
 	"github.com/kinvolk/lokomotive/pkg/install"
 	"github.com/kinvolk/lokomotive/pkg/k8sutil"
 	"github.com/kinvolk/lokomotive/pkg/lokomotive"
@@ -105,6 +107,14 @@ func runClusterApply(cmd *cobra.Command, args []string) {
 		for _, c := range releases {
 			cu.upgradeComponent(c)
 		}
+	}
+
+	kubeconfigAbsoutePath, _ := filepath.Abs(kubeconfigPath)
+
+	ctxLogger.Println("Applying admission webhook configuration")
+
+	if err := util.RunAdmissionWebhook(kubeconfigAbsoutePath); err != nil {
+		ctxLogger.Fatalf("Applying admission webhook failed: %v", err)
 	}
 
 	if skipComponents {
