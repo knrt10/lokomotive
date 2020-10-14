@@ -1,0 +1,77 @@
+name: Initial Tests
+on:
+  pull_request:
+    paths-ignore:
+      - 'LICENSE'
+      - '**.md'
+      - 'ci/**'
+      - 'assets/**'
+      - 'Dockerfile'
+      - 'examples/**'
+      - 'pkg/assets/generated_assets.go'
+      - 'pkg/platform/**'
+      - 'scripts/**'
+  
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'LICENSE'
+      - '**.md'
+      - 'ci/**'
+      - 'assets/**'
+      - 'Dockerfile'
+      - 'examples/**'
+      - 'pkg/assets/generated_assets.go'
+      - 'pkg/platform/**'
+      - 'scripts/**'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v2.1.2
+        with:
+          go-version: '1.15.2'
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2.3.2
+
+      - name: Build
+        run: make build
+        
+      - name: Run Tests
+        run: make test
+  
+  golangci:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+
+      - uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.30
+          only-new-issues: true
+  
+  codespell:
+    name: Codespell
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+
+      - uses: actions/checkout@v2
+      - name: Codespell test
+        uses: codespell-project/actions-codespell@master
+        with:
+          skip: vendor, ./lokoctl, *.png, assets/charts/components/*, docs/images/*
+          ignore_words_file: './.codespell.ignorewords'
+          check_filenames: true
+          check_hidden: true
