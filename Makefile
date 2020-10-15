@@ -178,3 +178,25 @@ build-webhook:
 .PHONY: docker-build-webhook
 docker-build-webhook:
 	docker build -f cmd/admission-webhook-server/Dockerfile -t $(ADMISSION_WEBHOOK_SERVER) .
+
+.PHONY: check-update-assets
+check-update-assets:
+	make update-assets
+	@test -z "$$(git status --porcelain)" || (echo "Please run make update-assets and commit the changes.";git --no-pager diff; exit 1)
+
+.PHONY: check-vendor
+check-vendor:
+	make vendor
+	@test -z "$$(git status --porcelain)" || (echo "Please run make vendor and commit the changes.";git --no-pager diff; exit 1)
+
+.PHONY: check-docs
+check-docs:
+	make docs
+	@test -z "$$(git status --porcelain)" || (echo "Please run make docs and commit the changes.";git --no-pager diff; exit 1)
+
+.PHONY: ci
+ci: build test check-update-assets check-vendor check-docs
+
+.PHONY: lint-docker-ci
+lint-docker-ci:
+	docker run --rm -v $(shell pwd):/app -w /app golangci/golangci-lint:v1.30.0 make lint-bin
