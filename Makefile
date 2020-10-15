@@ -178,3 +178,18 @@ build-webhook:
 .PHONY: docker-build-webhook
 docker-build-webhook:
 	docker build -f cmd/admission-webhook-server/Dockerfile -t $(ADMISSION_WEBHOOK_SERVER) .
+
+.PHONY: check-update-assets
+check-update-assets:
+	make update-assets
+	@test -z "$$(git status --porcelain)" || (echo "Please run make update-assets and commit the changes.";git --no-pager diff; exit 1)
+
+.PHONY: check-vendor
+check-vendor:
+	make vendor
+	@test -z "$$(git status --porcelain)" || (echo "Please run make vendor and commit the changes.";git --no-pager diff; exit 1)
+
+.PHONY: check-docs
+check-docs:
+	make docs
+	@test -z "$$(git status --porcelain)" || (echo "Please run make docs and commit the changes.";git --no-pager diff; exit 1)
